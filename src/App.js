@@ -1,3 +1,4 @@
+// Powerranks App - Updated for React Router DOM v6.20.1 compatibility
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabase";
 import { Bar } from "react-chartjs-2";
