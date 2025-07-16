@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 10 Player Rankings</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f7f8fa;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      background: #fff;
+      margin: 2rem 0;
+      padding: 2rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.7rem;
+      color: #222;
+    }
+    .rank-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .rank-label {
+      flex: 0 0 110px;
+      font-weight: 500;
+      color: #444;
+      font-size: 1rem;
+    }
+    select {
+      flex: 1;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      background: #fafbfc;
+      transition: border 0.2s;
+    }
+    select:focus {
+      border: 1.5px solid #007bff;
+      outline: none;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      gap: 1rem;
+    }
+    button {
+      flex: 1;
+      padding: 0.7rem 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .submit-btn {
+      background: #007bff;
+      color: #fff;
+    }
+    .submit-btn:disabled {
+      background: #b3d1ff;
+      color: #fff;
+      cursor: not-allowed;
+    }
+    .reset-btn {
+      background: #f3f3f3;
+      color: #333;
+    }
+    @media (max-width: 500px) {
+      .container {
+        padding: 1rem 0.5rem;
+        max-width: 98vw;
+      }
+      .rank-label {
+        flex: 0 0 90px;
+        font-size: 0.97rem;
+      }
+      h1 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Rank Your Top 10 Players</h1>
+    <form id="rankingForm" autocomplete="off">
+      <div id="dropdowns"></div>
+      <div class="actions">
+        <button type="button" class="reset-btn" id="resetBtn">Reset</button>
+        <button type="submit" class="submit-btn" id="submitBtn" disabled>Submit Rankings</button>
+      </div>
+    </form>
+  </div>
+  <script>
+    const playerList = [
+      "Pratham", "Arjan", "Madhav", "Sid", "Jattan", "Arjun", "Saksham", "Japnam", "Kevin", "Surya", "Shiv", "Satvik", "Yash", "Kshitij", "Cristian", "Jaival"
+    ];
+    const rankLabels = [
+      "1st Overall", "2nd Overall", "3rd Overall", "4th Overall", "5th Overall",
+      "6th Overall", "7th Overall", "8th Overall", "9th Overall", "10th Overall"
+    ];
+    const dropdownsDiv = document.getElementById('dropdowns');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const numRanks = 10;
+    let selections = Array(numRanks).fill("");
+
+    function createDropdowns() {
+      dropdownsDiv.innerHTML = '';
+      for (let i = 0; i < numRanks; i++) {
+        const row = document.createElement('div');
+        row.className = 'rank-row';
+        const label = document.createElement('label');
+        label.className = 'rank-label';
+        label.setAttribute('for', `rank${i}`);
+        label.textContent = rankLabels[i];
+        const select = document.createElement('select');
+        select.id = `rank${i}`;
+        select.dataset.index = i;
+        select.innerHTML = '<option value="">-- Select Player --</option>';
+        row.appendChild(label);
+        row.appendChild(select);
+        dropdownsDiv.appendChild(row);
+      }
+    }
+
+    function updateDropdownOptions() {
+      // For each dropdown, show all unselected players + its own selection
+      for (let i = 0; i < numRanks; i++) {
+        const select = document.getElementById(`rank${i}`);
+        const prevValue = select.value;
+        // Build available options: all not selected elsewhere, plus its own selection
+        const used = selections.filter((sel, idx) => sel && idx !== i);
+        const available = playerList.filter(name => !used.includes(name));
+        select.innerHTML = '<option value="">-- Select Player --</option>';
+        for (const name of available) {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        }
+        // If this dropdown had a selection, re-add it (if not in available)
+        if (selections[i] && !available.includes(selections[i])) {
+          const opt = document.createElement('option');
+          opt.value = selections[i];
+          opt.textContent = selections[i];
+          select.appendChild(opt);
+        }
+        select.value = selections[i] || "";
+      }
+      // Enable submit only if all 10 are filled
+      submitBtn.disabled = selections.some(sel => !sel);
+    }
+
+    function handleSelectChange(e) {
+      const idx = Number(e.target.dataset.index);
+      const prev = selections[idx];
+      const val = e.target.value;
+      selections[idx] = val;
+      updateDropdownOptions();
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      if (selections.some(sel => !sel)) return;
+      // Show alert in order 1st to 10th
+      let msg = 'Your Rankings:\n';
+      for (let i = 0; i < numRanks; i++) {
+        msg += `${rankLabels[i]}: ${selections[i]}\n`;
+      }
+      alert(msg);
+    }
+
+    function handleReset() {
+      selections = Array(numRanks).fill("");
+      updateDropdownOptions();
+    }
+
+    // Initial setup
+    createDropdowns();
+    updateDropdownOptions();
+    // Add event listeners
+    for (let i = 0; i < numRanks; i++) {
+      document.getElementById(`rank${i}`).addEventListener('change', handleSelectChange);
+    }
+    document.getElementById('rankingForm').addEventListener('submit', handleSubmit);
+    resetBtn.addEventListener('click', handleReset);
+  </script>
+</body>
+</html> 
